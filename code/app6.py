@@ -143,13 +143,11 @@ def lieu_de_bode_circuit_corrigé():
                 finalGain = gain
                 topGain = gain
                 topMag = max(mag)
-                #deltaDB = newDeltaDB
         else:
             if (min(mag) > lowMag):
                 finalGain = gain
                 lowGain = gain
                 lowMag = min(mag)
-                #deltaDB = newDeltaDB
 
 
         # newDeltaDB = max(mag) - min(mag)
@@ -167,8 +165,8 @@ def lieu_de_bode_circuit_corrigé():
     #parallele totale
     zp2, pp2, kp2 = hp.paratf(zp1, pp1, kp1, zs, ps, ks)
     bp2, ap2 = signal.zpk2tf(zp2, pp2, kp2)
-    magp2, php2, wp2, fig, ax = hp.bodeplot(bp2, ap2, 'bode final')
-    hp.grpdel1(wp2, -np.diff(php2) / np.diff(wp2), 'bode final')
+    magp2, php2, wp2, fig, ax = hp.bodeplot(bp2, ap2, 'Lieu de Bode - ')
+    hp.grpdel1(wp2, -np.diff(php2) / np.diff(wp2), '- Complete circuit')
 
 
 
