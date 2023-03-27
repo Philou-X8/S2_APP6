@@ -103,23 +103,64 @@ def signal_1():
 
 def lieu_de_bode_circuit_corrigé():
     #passe bas
-    b_bas,a_bas,z_bas,p_bas,k_bas=filtre_Passe_Bas()
+    b_bas,a_bas,z_bas,p_bas,k_bas = filtre_Passe_Bas()
 
     #passe haut
-    b_haut,a_haut,z_haut,p_haut,k_haut=filtre_Passe_Haut()
+    b_haut,a_haut,z_haut,p_haut,k_haut = filtre_Passe_Haut()
 
     #passe haut de bande
-    b_haut_bande,a_haut_bande,z_haut_bande,p_haut_bande,k_haut_bande=filtre_Passe_Haut_dePasseBande()
+    b_haut_bande,a_haut_bande,z_haut_bande,p_haut_bande,k_haut_bande = filtre_Passe_Haut_dePasseBande()
 
     #passe bas de bande
-    b_bas_bande, a_bas_bande, z_bas_bande, p_bas_bande, k_bas_bande=filtre_Passe_Bas_dePasseBande()
+    b_bas_bande, a_bas_bande, z_bas_bande, p_bas_bande, k_bas_bande = filtre_Passe_Bas_dePasseBande()
 
     #parallele bas et haut
-    zp1, pp1, kp1 =paratf_ba(-1*b_bas,a_bas,-1*b_haut,a_haut)
+    zp1, pp1, kp1 = paratf_ba(-1*b_bas, a_bas, -1*b_haut, a_haut)
     bp1, ap1 = signal.zpk2tf(zp1, pp1, kp1)
 
+    deltaDB = 10
+    topGain = 2
+    lowGain = 0.2
+    topMag = 10
+    lowMag = -10
+    finalGain = 1
+    for itter in range(0, 20):
+        gain = (topGain+lowGain)/2
+        zs, ps, ks = hp.seriestf(z_bas_bande, p_bas_bande, gain * k_bas_bande, z_haut_bande, p_haut_bande, k_haut_bande)
+
+        # parallele totale
+        zp2, pp2, kp2 = hp.paratf(zp1, pp1, kp1, zs, ps, ks)
+        bp2, ap2 = signal.zpk2tf(zp2, pp2, kp2)
+        # magp2, php2, wp2, fig, ax = hp.bodeplot(bp2, ap2, str(gain))
+        # magnitude (dB)
+        w, h = signal.freqs(bp2, ap2,
+                            5000)  # calcul la réponse en fréquence du filtre (H(jw)), fréquence donnée en rad/sec
+        mag = 20 * np.log10(np.abs(h))
+        #newDeltaDB = max(mag) - min(mag)
+
+        if( (max(mag) + min(mag)) > 0):
+            if (max(mag) < topMag):
+                finalGain = gain
+                topGain = gain
+                topMag = max(mag)
+                #deltaDB = newDeltaDB
+        else:
+            if (min(mag) > lowMag):
+                finalGain = gain
+                lowGain = gain
+                lowMag = min(mag)
+                #deltaDB = newDeltaDB
+
+
+        # newDeltaDB = max(mag) - min(mag)
+        #print("newDeltaDB: ", newDeltaDB, " with gain: ", gain)
+        print("topGain: ", topGain, " lowGain: ", lowGain)
+        # newTop = max(magp2)
+        # newLow = min(magp2)
+
     #serie bande
-    k2=0.84
+    k2 = finalGain
+    # k2 = 0.8
     zs, ps, ks = hp.seriestf(z_bas_bande, p_bas_bande, k2*k_bas_bande, z_haut_bande, p_haut_bande, k_haut_bande)
     bs, a_s = signal.zpk2tf(zs, ps, ks)
 
@@ -128,6 +169,8 @@ def lieu_de_bode_circuit_corrigé():
     bp2, ap2 = signal.zpk2tf(zp2, pp2, kp2)
     magp2, php2, wp2, fig, ax = hp.bodeplot(bp2, ap2, 'bode final')
     hp.grpdel1(wp2, -np.diff(php2) / np.diff(wp2), 'bode final')
+
+
 
 def main():
     #filtre_Passe_Haut_dePasseBande()
