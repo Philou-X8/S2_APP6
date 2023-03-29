@@ -23,6 +23,13 @@ def filtre_Passe_Bas():
     b, a = signal.butter(2, wc, 'low', analog=True)
     print(f'Butterworth Numérateur {b}, Dénominateur {a}')
     z, p, k = signal.tf2zpk(b, a)
+
+    # affiche lieu de bode
+    """
+    tf = signal.TransferFunction(b, a)
+    w, mag, phlin = signal.bode(tf)
+    hp.bode1(w, mag, phlin, 'Passe bas -')
+    """
     return b,a,z,p,k
 
 def filtre_Passe_Haut():
@@ -30,10 +37,17 @@ def filtre_Passe_Haut():
     b, a = signal.butter(2, wc, 'high', analog=True)
     print(f'Butterworth Numérateur {b}, Dénominateur {a}')
     z, p, k = signal.tf2zpk(b, a)
+
+    # affiche lieu de bode
+    """
+    tf = signal.TransferFunction(b, a)
+    w, mag, phlin = signal.bode(tf)
+    hp.bode1(w, mag, phlin, 'Passe haut -')
+    """
     return b,a,z,p,k
 
 def filtre_Passe_Haut_dePasseBande():
-    wc = 2000 * np.pi
+    wc = 1000 * 2 * np.pi
     b, a = signal.butter(2, wc, 'high', analog=True)
     print(f'Butterworth Numérateur {b}, Dénominateur {a}')
     z, p, k = signal.tf2zpk(b, a)
@@ -45,7 +59,8 @@ def filtre_Passe_Haut_dePasseBande():
     # affiche lieu de bode
     tf = signal.TransferFunction(b, a)
     w, mag, phlin = signal.bode(tf)
-    hp.bode1(w, mag, phlin, 'passe haut de bande ')
+    hp.bode1(w, mag, phlin, 'Passe haut du passe bande -')
+
     return b,a,z,p,k
 
 def filtre_Passe_Bas_dePasseBande():
@@ -53,6 +68,13 @@ def filtre_Passe_Bas_dePasseBande():
     b, a = signal.butter(2, wc, 'low', analog=True)
     print(f'Butterworth Numérateur {b}, Dénominateur {a}')
     z, p, k = signal.tf2zpk(b, a)
+
+    # affiche lieu de bode
+    """
+    tf = signal.TransferFunction(b, a)
+    w, mag, phlin = signal.bode(tf)
+    hp.bode1(w, mag, phlin, 'Passe bas du passe bande -')
+    """
     return b,a,z,p,k
 
 def signal_1():
@@ -149,12 +171,7 @@ def lieu_de_bode_circuit_corrigé():
                 lowGain = gain
                 lowMag = min(mag)
 
-
-        # newDeltaDB = max(mag) - min(mag)
-        #print("newDeltaDB: ", newDeltaDB, " with gain: ", gain)
-        print("topGain: ", topGain, " lowGain: ", lowGain)
-        # newTop = max(magp2)
-        # newLow = min(magp2)
+        # print("topGain: ", topGain, " lowGain: ", lowGain)
 
     #serie bande
     k2 = finalGain
@@ -162,10 +179,15 @@ def lieu_de_bode_circuit_corrigé():
     zs, ps, ks = hp.seriestf(z_bas_bande, p_bas_bande, k2*k_bas_bande, z_haut_bande, p_haut_bande, k_haut_bande)
     bs, a_s = signal.zpk2tf(zs, ps, ks)
 
+    """
+    # lieu de bode: passe bande
+    hp.bodeplot(bs, a_s, str(finalGain))
+    """
+
     #parallele totale
     zp2, pp2, kp2 = hp.paratf(zp1, pp1, kp1, zs, ps, ks)
     bp2, ap2 = signal.zpk2tf(zp2, pp2, kp2)
-    magp2, php2, wp2, fig, ax = hp.bodeplot(bp2, ap2, 'Lieu de Bode - ')
+    magp2, php2, wp2, fig, ax = hp.bodeplot(bp2, ap2, 'Lieu de Bode -')
     hp.grpdel1(wp2, -np.diff(php2) / np.diff(wp2), '- Complete circuit')
 
 
